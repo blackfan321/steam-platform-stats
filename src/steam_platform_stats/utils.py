@@ -70,6 +70,14 @@ def get_argument_parser() -> argparse.ArgumentParser:
         help="Filter displayed games by minimum playtime in hours"
     )
 
+    show_group = parser.add_mutually_exclusive_group()
+    show_group.add_argument("--no-stats",
+                            action="store_true",
+                            help="Don't show platform stats")
+    show_group.add_argument("--no-table",
+                            action="store_true",
+                            help="Don't show games table")
+
     argcomplete.autocomplete(parser)
 
     return parser

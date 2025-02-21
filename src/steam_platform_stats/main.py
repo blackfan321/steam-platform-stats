@@ -59,8 +59,11 @@ def main():
 
     sort_games_by_platform(games, args.platform)
 
-    print_platform_stats(games, args.platform, args.no_color)
-    print_games_table(games, args.platform, args.limit, get_min_playtime(args), args.no_color)
+    if not args.no_stats:
+        print_platform_stats(games, args.platform, args.no_color)
+
+    if not args.no_table:
+        print_games_table(games, args.platform, args.limit, get_min_playtime(args), args.no_color)
 
 
 if __name__ == "__main__":
