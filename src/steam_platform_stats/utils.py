@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 from .models import GameStats
 
 
-def get_steam_env_vars(env_path: str) -> (str, int):
-    load_dotenv(env_path)
+def get_steam_env_vars(env_file_path: str) -> (str, int):
+    load_dotenv(env_file_path)
 
     steam_api_key = os.environ["STEAM_API_KEY"]
     steam_id = int(os.environ["STEAM_ID"])
