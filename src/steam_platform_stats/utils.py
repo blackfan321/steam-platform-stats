@@ -39,11 +39,6 @@ def get_min_playtime(args) -> int:
 def get_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--env-file-path',
-        type=str,
-        help="override the path to the .env file"
-    )
-    parser.add_argument(
         '-p', "--platform",
         default="all",
         choices=["windows", "mac", "linux", "deck", "all"],
@@ -56,9 +51,9 @@ def get_argument_parser() -> argparse.ArgumentParser:
         help="limit the number of games shown in the table"
     )
     parser.add_argument(
-        "--no-color",
-        action='store_true',
-        help="disable colored output"
+        '--env-file-path',
+        type=str,
+        help="override the path to the .env file"
     )
 
     time_group = parser.add_mutually_exclusive_group()
@@ -84,6 +79,12 @@ def get_argument_parser() -> argparse.ArgumentParser:
                             help="hide the games table (only show platform stats)")
 
     argcomplete.autocomplete(parser)
+
+    parser.add_argument(
+        "--no-color",
+        action='store_true',
+        help="disable colored output"
+    )
 
     return parser
 
