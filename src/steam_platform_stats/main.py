@@ -1,9 +1,9 @@
 from rich.console import Console
 from rich.table import Table
 
-from steam import get_owned_games
-from utils import *
-from models import GameStats
+from .steam_utils import get_owned_games
+from .utils import *
+from .models import GameStats
 
 
 def print_platform_stats(games: list[GameStats], platform: str, no_color: bool):

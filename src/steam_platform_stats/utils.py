@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 
-from models import GameStats
+from .models import GameStats
 
 
 def get_steam_env_vars() -> (str, int):

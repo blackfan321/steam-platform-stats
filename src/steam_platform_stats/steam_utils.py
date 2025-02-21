@@ -1,7 +1,7 @@
 import requests
 from requests import RequestException
 
-from models import GameStats
+from .models import GameStats
 
 
 def get_owned_games(key: str, steamid: int) -> list[GameStats] | None:
