@@ -7,11 +7,11 @@ from dotenv import load_dotenv
 from .models import GameStats
 
 
-def get_steam_env_vars() -> (str, int):
-    load_dotenv()
+def get_steam_env_vars(env_path: str) -> (str, int):
+    load_dotenv(env_path)
 
-    steam_api_key = os.getenv("STEAM_API_KEY")
-    steam_id = int(os.getenv("STEAM_ID"))
+    steam_api_key = os.environ["STEAM_API_KEY"]
+    steam_id = int(os.environ["STEAM_ID"])
 
     if not steam_api_key:
         raise ValueError("STEAM_API_KEY variable is missing")
@@ -38,6 +38,11 @@ def get_min_playtime(args) -> int:
 
 def get_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--env-file-path',
+        type=str,
+        help="override the path to the .env file"
+    )
     parser.add_argument(
         '-p', "--platform",
         default="all",

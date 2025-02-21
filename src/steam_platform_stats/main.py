@@ -6,6 +6,8 @@ from .steam_utils import get_owned_games
 from .utils import *
 from .models import GameStats
 
+DEFAULT_ENV_PATH = os.path.expanduser('~/.steam-platform-stats/.env')
+
 
 def print_platform_stats(games: list[GameStats], platform: str, no_color: bool):
     console = Console(no_color=no_color)
@@ -53,7 +55,8 @@ def main():
     parser = get_argument_parser()
     args = parser.parse_args()
 
-    steam_api_key, steam_id = get_steam_env_vars()
+    env_file_path = args.env_file_path or DEFAULT_ENV_PATH
+    steam_api_key, steam_id = get_steam_env_vars(os.path.expanduser(env_file_path))
 
     games: list[GameStats] = get_owned_games(steam_api_key, steam_id)
 
