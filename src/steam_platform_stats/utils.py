@@ -39,13 +39,13 @@ def get_min_playtime(args) -> int:
 def get_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--platform", '--p',
+        '-p', "--platform",
         default="all",
         choices=["windows", "mac", "linux", "deck", "all"],
         help="Specify the platform: windows, mac, linux, deck, all"
     )
     parser.add_argument(
-        "--limit", '--l',
+        '-l', "--limit",
         type=int,
         default=None,
         help="Limit the number of games displayed"
