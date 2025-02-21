@@ -6,7 +6,7 @@
 
 This little tool lets you check your Steam gaming stats by platform. Pick a platform, and it’ll show you how many games you’ve played, total hours logged, and which games you’ve spent the most time on.
 
-![A screenshot of dog making a DNS request](screenshot.png)
+![A screenshot of steam-platform-stats](screenshot.png)
 
 ## Features
 
