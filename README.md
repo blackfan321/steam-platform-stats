@@ -23,11 +23,32 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
    git clone https://github.com/blackfan321/steam-platform-stats
    cd steam-platform-stats
    
-2. Run pipx to install a package:
+2. Run pipx to install the package:
     ```bash
     pipx install steam-platform-stats
 
-3. (Optional) Enable autocompletion for zsh/bash:
+3. Create the `.env` file:
+    - Create the directory if it doesn't exist:
+     ```bash
+     mkdir -p ~/.steam-platform-stats
+     ```
+
+    - Create and edit the .env file:
+     ```bash
+     vim ~/.steam-platform-stats/.env
+     ```
+   
+    - Add the following lines:
+     ```bash
+     STEAM_API_KEY='your_api_key_here'
+     STEAM_ID=your_steam_id_here
+     ```
+    
+    How to get these credentials:
+    - `STEAM_API_KEY`: Register at [Steam Web API](https://steamcommunity.com/dev/apikey) to get your API key.
+    - `STEAM_ID`: You can use [this site](https://steamid.xyz/): enter your profile URL, then copy obtained Steam64 ID and paste here.
+
+4. (Optional) Enable autocompletion for zsh/bash:
    - Install `argcomplete` via pip:
      ```bash
      pip install argcomplete
@@ -54,6 +75,10 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
 - `-l`, `--limit`  
   Limit the number of games shown in the table.  
   **Example**: `--limit 5`
+
+- `--env-file-path`  
+  Override the path to the .env file.  
+  **Example**: `--env-file-path /some/path/.env`
 
 ### Filter games by playtime
 - `--min-playtime-minutes`  
