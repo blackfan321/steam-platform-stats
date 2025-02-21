@@ -1,3 +1,4 @@
+# PYTHON_ARGCOMPLETE_OK
 from rich.console import Console
 from rich.table import Table
 

@@ -10,3 +10,4 @@ requests==2.32.3
 rich==13.9.4
 urllib3==2.3.0
 wcwidth==0.2.13
+argcomplete==3.5.3

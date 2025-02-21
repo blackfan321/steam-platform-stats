@@ -1,6 +1,7 @@
 import argparse
 import os
 
+import argcomplete
 from dotenv import load_dotenv
 
 from .models import GameStats
@@ -68,6 +69,8 @@ def get_argument_parser() -> argparse.ArgumentParser:
         default=None,
         help="Filter displayed games by minimum playtime in hours"
     )
+
+    argcomplete.autocomplete(parser)
 
     return parser
 

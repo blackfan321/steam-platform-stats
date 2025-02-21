@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "steam-platform-stats"
 version = "0.1.0"
-description = "A tool to display Steam games statistics by platform"
+description = "A tool to display user's Steam games statistics by platform"
 authors = [
     { name="Ivan Batrakov", email="blackfan321@gmail.com" }
 ]
@@ -25,6 +25,7 @@ dependencies = [
         "rich==13.9.4",
         "urllib3==2.3.0",
         "wcwidth==0.2.13",
+        "argcomplete==3.5.3"
 ]
 
 [project.scripts]
@@ -32,7 +33,6 @@ steam-platform-stats = "steam_platform_stats.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["steam_platform_stats"]
 
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.md"]
