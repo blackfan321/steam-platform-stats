@@ -1,34 +1,15 @@
 from rich.console import Console
 from rich.table import Table
-from rich.text import Text
 
 from steam import get_owned_games
-from utils import format_minutes, get_argument_parser, get_steam_env_vars
+from utils import *
 from models import GameStats
 
 
-def get_playtime_for_platform(game: GameStats, platform: str) -> int:
-    platform_playtime_map = {
-        "windows": game.playtime_windows_forever,
-        "mac": game.playtime_mac_forever,
-        "linux": game.playtime_linux_forever,
-        "deck": game.playtime_deck_forever,
-        "all": game.playtime_forever,
-    }
-    return platform_playtime_map.get(platform, 0)
+def print_platform_stats(games: list[GameStats], platform: str, no_color: bool):
+    console = Console(no_color=no_color)
+    count, total_minutes = 0, 0
 
-
-def sort_games_by_platform(games: list[GameStats], platform: str):
-    games.sort(
-        key=lambda x: get_playtime_for_platform(x, platform),
-        reverse=True
-    )
-
-
-def print_platform_stats(games: list[GameStats], platform: str):
-    console = Console()
-    count = 0
-    total_minutes = 0
     pretty_platform_names = {
         "windows": "🖥️ Windows",
         "mac": "🍏 MacOS",
@@ -50,8 +31,8 @@ def print_platform_stats(games: list[GameStats], platform: str):
                   f"[bold yellow]🕒 {format_minutes(total_minutes)}[/bold yellow]")
 
 
-def print_games_table(games: list[GameStats], platform: str, limit: int, min_playtime: int):
-    console = Console()
+def print_games_table(games: list[GameStats], platform: str, limit: int, min_playtime: int, no_color: bool):
+    console = Console(no_color=no_color)
     table = Table(header_style="bold magenta")
     table.add_column("#", style="dim cyan", justify="right")
     table.add_column("GAME", style="green")
@@ -62,11 +43,7 @@ def print_games_table(games: list[GameStats], platform: str, limit: int, min_pla
     for idx, game in enumerate(games_to_display, 1):
         playtime = get_playtime_for_platform(game, platform)
         if playtime > min_playtime:
-            table.add_row(
-                str(idx),
-                game.name,
-                Text(format_minutes(playtime, True), style="yellow")
-            )
+            table.add_row(str(idx), game.name, format_minutes(playtime, True))
 
     console.print(table)
 
@@ -81,8 +58,8 @@ def main():
 
     sort_games_by_platform(games, args.platform)
 
-    print_platform_stats(games, args.platform)
-    print_games_table(games, args.platform, args.limit, args.min_playtime)
+    print_platform_stats(games, args.platform, args.no_color)
+    print_games_table(games, args.platform, args.limit, get_min_playtime(args), args.no_color)
 
 
 if __name__ == "__main__":
