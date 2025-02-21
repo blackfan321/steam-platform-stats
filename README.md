@@ -14,7 +14,7 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
 - Displays a clean table with your played games by platform.
 - Supports all Steam platforms (Windows, Mac, Linux, and Steam Deck).
 - Easy installation via `pipx`.
-- Some CLI-arguments you can toy with.
+- Some command-line options you can toy with.
 
 ## Installation
 
@@ -43,7 +43,7 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
      source ~/.bashrc
      source ~/.zshrc
 
-## CLI Arguments
+## Command-line options
 - `-h`, `--help`  
   Show the help page.  
 
