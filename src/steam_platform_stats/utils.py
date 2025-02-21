@@ -42,18 +42,18 @@ def get_argument_parser() -> argparse.ArgumentParser:
         '-p', "--platform",
         default="all",
         choices=["windows", "mac", "linux", "deck", "all"],
-        help="Specify the platform: windows, mac, linux, deck, all"
+        help="choose the platform: windows, mac, linux, deck, all"
     )
     parser.add_argument(
         '-l', "--limit",
         type=int,
         default=None,
-        help="Limit the number of games displayed"
+        help="limit the number of games shown in the table"
     )
     parser.add_argument(
         "--no-color",
         action='store_true',
-        help="Disable colored output in console"
+        help="disable colored output"
     )
 
     time_group = parser.add_mutually_exclusive_group()
@@ -61,22 +61,22 @@ def get_argument_parser() -> argparse.ArgumentParser:
         "--min-playtime-minutes",
         type=int,
         default=0,
-        help="Filter displayed games by minimum playtime in minutes"
+        help="filter displayed games by minimum playtime in minutes"
     )
     time_group.add_argument(
         "--min-playtime-hours",
         type=float,
         default=None,
-        help="Filter displayed games by minimum playtime in hours"
+        help="filter displayed games by minimum playtime in hours"
     )
 
     show_group = parser.add_mutually_exclusive_group()
     show_group.add_argument("--no-stats",
                             action="store_true",
-                            help="Don't show platform stats")
+                            help="hide platform stats (only show games)")
     show_group.add_argument("--no-table",
                             action="store_true",
-                            help="Don't show games table")
+                            help="hide the games table (only show platform stats)")
 
     argcomplete.autocomplete(parser)
 
