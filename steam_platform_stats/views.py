@@ -1,11 +1,14 @@
+from datetime import datetime
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from steam_platform_stats import GameStats, format_minutes, get_time_ago, get_playtime_for_platform
+from .models import GameStats
+from .utils import format_minutes, format_time_ago, get_playtime_for_platform
 
 
-def print_game_preview(games: list[GameStats], appid: int, no_color: bool):
+def print_game_preview(games: list[GameStats], appid: int, no_color: bool) -> None:
     console = Console(no_color=no_color, force_terminal=True)
 
     game = next((g for g in games if g.appid == appid), None)
@@ -24,10 +27,8 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool):
     if total_playtime > 0:
         max_playtime = max(playtime for _, _, playtime, _ in platforms)
 
-    # Собираем контент для панели
     panel_content = []
 
-    # Добавляем статистику по платформам
     for emoji, name, playtime, color in platforms:
         if total_playtime > 0:
             percentage = (playtime / total_playtime * 100)
@@ -43,9 +44,8 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool):
     panel_content.append(f"\n[bold]🌐 Total: {format_minutes(total_playtime)}[/bold]")
 
     if game.rtime_last_played:
-        from datetime import datetime
         last_played = datetime.fromtimestamp(game.rtime_last_played)
-        time_ago = get_time_ago(game.rtime_last_played)
+        time_ago = format_time_ago(game.rtime_last_played)
 
         panel_content.append(f"\n [dim]Last played: {last_played.strftime('%Y-%m-%d %H:%M')}[/dim]")
         panel_content.append(f"[dim]   ({time_ago})[/dim]")
@@ -61,7 +61,7 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool):
     console.print(panel)
 
 
-def print_platform_stats(games: list[GameStats], platform: str, no_color: bool):
+def print_platform_stats(games: list[GameStats], platform: str, no_color: bool) -> None:
     console = Console(no_color=no_color, force_terminal=True)
     count, total_minutes = 0, 0
 
@@ -86,18 +86,30 @@ def print_platform_stats(games: list[GameStats], platform: str, no_color: bool):
                   f"[bold yellow]🕒 {format_minutes(total_minutes)}[/bold yellow]")
 
 
-def print_games_table(games: list[GameStats], platform: str, limit: int, min_playtime: int, no_color: bool):
-    console = Console(no_color=no_color, force_terminal=True)
-    table = Table(header_style="bold magenta", show_header=False)
+def print_games_table_fzf(rows: list[dict], no_color: bool) -> None:
+    console = Console(no_color=no_color, force_terminal=True)  # keep fzf colors
+    table = Table(header_style="bold magenta", show_header=False)  # header is not needed for fzf
+
+    table.add_column("#", style="dim cyan", justify="right")
+    table.add_column("GAME", style="green")
+    table.add_column("PLAYTIME", style="yellow", justify="right")
+    table.add_column("APPID", style="dim", justify="right")  # APPID is needed for fzf preview
+
+    for row in rows:
+        table.add_row(str(row["index"]), row["name"], row["playtime"], str(row["appid"]))
+
+    console.print(table)
+
+
+def print_games_table_console(rows: list[dict], no_color: bool) -> None:
+    console = Console(no_color=no_color)
+    table = Table(header_style="bold magenta")
+
     table.add_column("#", style="dim cyan", justify="right")
     table.add_column("GAME", style="green")
     table.add_column("PLAYTIME", style="yellow", justify="right")
 
-    games_to_display = games[:limit] if limit else games
-
-    for idx, game in enumerate(games_to_display, 1):
-        playtime = get_playtime_for_platform(game, platform)
-        if playtime > min_playtime:
-            table.add_row(str(idx), game.name, format_minutes(playtime, True), str(game.appid))
+    for row in rows:
+        table.add_row(str(row["index"]), row["name"], row["playtime"])
 
     console.print(table)

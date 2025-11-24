@@ -1,8 +1,8 @@
 [project]
 name = "steam-platform-stats"
-version = "0.1.0"
+version = "0.2.0"
 description = "A tool to display user's Steam games statistics by platform"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "argcomplete>=3.6.3",
     "prettytable>=3.17.0",
@@ -13,3 +13,6 @@ dependencies = [
 
 [project.scripts]
 steam-platform-stats = "steam_platform_stats.main:main"
+
+[tool.setuptools.package-data]
+"steam_platform_stats" = ["*.sh"]

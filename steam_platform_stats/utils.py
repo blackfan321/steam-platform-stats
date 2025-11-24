@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 import time
+import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 import argcomplete
@@ -11,35 +13,32 @@ from .models import GameStats
 
 
 APP_DIR = Path("~/.steam-platform-stats").expanduser()
-GAMES_JSON = APP_DIR / "games.json"
+GAMES_JSON_PATH = APP_DIR / "games.json"
 
 
-def launch_interactive_mode():
-    import subprocess
-    import os
-    import sys
+def launch_interactive_mode() -> None:
+    script_dir = Path(__file__).resolve().parent
+    bash_script_path = script_dir / "interactive.sh"
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    bash_script = os.path.join(script_dir, "interactive.sh")
-
-    if not os.path.exists(bash_script):
+    if not bash_script_path.exists():
         print("Error: interactive script not found")
         return
 
     try:
-        # Запускаем bash-скрипт
-        subprocess.run(["bash", bash_script], check=True)
+        subprocess.run(["bash", bash_script_path], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error running interactive mode: {e}")
-    except FileNotFoundError:
-        print("Error: bash not found. Please install bash.")
 
 
-def get_steam_env_vars(env_file_path: str) -> (str, int):
+def get_steam_env_vars(env_file_path: Path) -> tuple[str, int]:
+    env_file_path = env_file_path.expanduser()
+    if not env_file_path.exists():
+        raise FileNotFoundError(f".env file not found at {env_file_path}")
+
     load_dotenv(env_file_path)
 
-    steam_api_key = os.environ["STEAM_API_KEY"]
-    steam_id = int(os.environ["STEAM_ID"])
+    steam_api_key = os.environ.get("STEAM_API_KEY")
+    steam_id = int(os.environ.get("STEAM_ID"))
 
     if not steam_api_key:
         raise ValueError("STEAM_API_KEY variable is missing")
@@ -89,19 +88,20 @@ def get_argument_parser() -> argparse.ArgumentParser:
         help="disable colored output"
     )
     parser.add_argument(
-        '--preview',
+        '--game-stats',
         type=int,
-        help="show detailed stats for specific game by appid"
-    )
-    parser.add_argument(
-        '--interactive', '-i',
-        action='store_true',
-        help="launch interactive fzf mode"
+        metavar="APPID",
+        help="show detailed stats for specific game by APPID"
     )
     parser.add_argument(
         "--fzf-table",
         action="store_true",
-        help="render table in fzf-friendly format (no header, force ANSI, includes APPID column)"
+        help="render table in fzf-friendly format (no header, force ANSI, include APPID column)"
+    )
+    parser.add_argument(
+        '-i', '--interactive',
+        action='store_true',
+        help="launch interactive fzf mode"
     )
 
     time_group = parser.add_mutually_exclusive_group()
@@ -142,7 +142,7 @@ def get_playtime_for_platform(game: GameStats, platform: str) -> int:
     return platform_playtime_map.get(platform, 0)
 
 
-def sort_games_by_platform(games: list[GameStats], platform: str):
+def sort_games_by_platform(games: list[GameStats], platform: str) -> None:
     games.sort(
         key=lambda x: get_playtime_for_platform(x, platform),
         reverse=True
@@ -150,38 +150,41 @@ def sort_games_by_platform(games: list[GameStats], platform: str):
 
 
 def load_games_from_cache() -> list[GameStats]:
-    if not GAMES_JSON.exists():
+    if not GAMES_JSON_PATH.exists():
         return []
 
-    file_age_seconds = time.time() - GAMES_JSON.stat().st_mtime
-    if file_age_seconds > 500 * 60:  # старше 5 минут
+    file_age_seconds = time.time() - GAMES_JSON_PATH.stat().st_mtime
+    if file_age_seconds > 5 * 60:  # check if cache is older than 5 minutes
         return []
 
-    with GAMES_JSON.open('r', encoding='utf-8') as f:
+    if GAMES_JSON_PATH.stat().st_size == 0:  # check if JSON-file is empty
+        return []
+
+    with GAMES_JSON_PATH.open('r', encoding='utf-8') as f:
         try:
             data = json.load(f)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            print(f'Failed to load games from cache. {e}')
             return []
     return [GameStats.from_dict(game) for game in data]
 
 
-def save_games_to_cache(games: list[GameStats]):
+def save_games_to_cache(games: list[GameStats]) -> None:
     APP_DIR.mkdir(parents=True, exist_ok=True)
-    with GAMES_JSON.open('w', encoding='utf-8') as f:
+    with GAMES_JSON_PATH.open('w', encoding='utf-8') as f:
         json.dump([game.to_dict() for game in games], f, indent=2)
 
 
-def get_time_ago(timestamp):
-    from datetime import datetime, timezone
+def format_time_ago(timestamp: int):
     now = datetime.now(timezone.utc)
     last_played = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     diff = now - last_played
 
     if diff.days == 0:
-        if diff.seconds < 3600:  # Меньше часа
+        if diff.seconds < 3600:
             minutes = diff.seconds // 60
             return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
-        else:  # Меньше дня но больше часа
+        else:
             hours = diff.seconds // 3600
             return f"{hours} hour{'s' if hours > 1 else ''} ago"
     elif diff.days == 1:
@@ -199,7 +202,7 @@ def get_time_ago(timestamp):
         return f"{years} year{'s' if years > 1 else ''} ago"
 
 
-def prepare_games_rows(games, platform, min_playtime, limit):
+def get_filtered_games_rows(games: list[GameStats], platform: str, min_playtime: int, limit: int) -> list[dict]:
     rows = []
     games_to_display = games[:limit] if limit else games
 
@@ -212,4 +215,5 @@ def prepare_games_rows(games, platform, min_playtime, limit):
                 "playtime": format_minutes(playtime, True),
                 "appid": game.appid,
             })
+
     return rows

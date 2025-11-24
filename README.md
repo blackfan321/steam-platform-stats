@@ -1,31 +1,61 @@
 # steam-platform-stats
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-0.1.0-orange)
+![Version](https://img.shields.io/badge/Version-0.2.0-orange)
 
-This little tool lets you check your Steam gaming stats by platform. Pick a platform, and it’ll show you how many games you’ve played, total hours logged, and which games you’ve spent the most time on.
+This little tool lets you check your Steam gaming stats by platform. Pick a platform, and it shows how many games you’ve played, total hours logged, and which games you’ve spent the most time on — and on which platform.
 
 <img src="screenshot.png" style="width:462px; height:348px; border-radius:10px;" />
 
 ## Features
 
-- Grabs your Steam stats by platform — games run and total hours.
-- Displays a clean table with your played games by platform.
-- Supports all Steam platforms (Windows, Mac, Linux, and Steam Deck).
-- Easy installation via `pipx`.
-- Some command-line options you can toy with.
+- Your Steam gaming stats for each platform (Windows, Mac, Linux, Steam Deck, or all).
+- Clean table showing your played games and logged hours.
+- Interactive mode via `fzf`.
+- Some command-line options you can toy with (check out `steam-platform-stats --help`).
+- Cached Steam API results for faster loading (~5 min TTL). Cache stored in `~/.steam-platform-stats/games.json`.
+- Easy installation via `pipx` or `uv tool install`.
+
+## Interactive Mode 
+A dynamic `fzf`-powered view of your Steam library.
+
+### What you can do
+- Browse your Steam games with live filtering.
+- Instantly switch between platforms.
+- View detailed per-platform stats for any game in the separate window.
+- See total playtime and game count for the current platform.
+
+### Requirements
+- `bash` (as the most common shell, Windows users can use WSL)
+- `fzf` (must be installed and available in `$PATH`)
+
+### Navigation and controls
+| Key / Action | Description                                                                    |
+|--------------|--------------------------------------------------------------------------------|
+| `TAB`        | Switch to the next platform in the list (All, Windows, Linux, Mac, Steam Deck) |
+| `CTRL-P`     | Open the platform selection menu                                               |
+| `ESC`        | Exit interactive mode                                                          |
+| `Enter`      | Open the game in your Steam Library                                            |
+
 
 ## Installation
 
 1. First, clone the repo:
-   ```bash
+```bash
    git clone https://github.com/blackfan321/steam-platform-stats
    cd steam-platform-stats
+```
    
-2. Run pipx to install the package:
+2. Install the package:
+   - Using `pipx`:
     ```bash
     pipx install steam-platform-stats
+    ```
+    - Using `uv`:
+   ```bash
+   uv tool steam_platform_stats
+   ```
 
 3. Create the `.env` file:
     - Create the directory if it doesn't exist:
@@ -63,8 +93,14 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
      ```bash
      source ~/.bashrc
      source ~/.zshrc
+     ```
 
-## Command-line options
+## Usage
+```bash
+steam-platform-stats [OPTIONS]
+```
+
+### General Options
 - `-h`, `--help`  
   Show the help page.  
 
@@ -80,7 +116,7 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
   Override the path to the .env file.  
   **Example**: `--env-file-path /some/path/.env`
 
-### Filter games by playtime
+### Filtering by Playtime
 - `--min-playtime-minutes`  
   Filter displayed games by minimum playtime in minutes.  
   **Example**: `--min-playtime-minutes 120`
@@ -89,8 +125,8 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
   Filter displayed games by minimum playtime in hours.  
   **Example**: `--min-playtime-hours 2.5`
 
-### Customize Output
-- `--no-stats`  
+### Output Options
+- `--no-stats` 
   Hide platform stats (only show games table).
 
 - `--no-table`  
@@ -98,3 +134,14 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
 
 - `--no-color`  
   Disable colored output.
+
+- `--fzf-table`
+  Render games table in fzf-friendly format (includes APPID, forces ANSI).
+
+- `--game-stats`
+  Show detailed stats for a single game by APPID.
+  **Example**: `--game-stats 550`
+
+### Interactive Mode
+- `-i`, `--interactive`  
+  Launch full-screen interactive mode using `fzf`.

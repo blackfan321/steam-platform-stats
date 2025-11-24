@@ -14,13 +14,10 @@ def get_owned_games(key: str, steamid: int) -> list[GameStats] | None:
                                           'include_appinfo': 'true'})
         r.raise_for_status()
     except RequestException as e:
-        print(f"Couldn't get owned games. {e}")
+        print(f"Could not fetch your Steam games. Please check your API key or network connection. {e}")
         return None
 
-    response = r.json()['response']
+    response = r.json().get('response')
+    games = [GameStats.from_dict(game) for game in response.get('games')]
 
-    # game_count = response['game_count']
-    games = [GameStats.from_dict(game) for game in response['games']]
-
-    # return game_count, games
     return games
