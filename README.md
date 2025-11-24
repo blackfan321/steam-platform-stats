@@ -54,7 +54,7 @@ A dynamic `fzf`-powered view of your Steam library.
     ```
     - Using `uv`:
    ```bash
-   uv tool .
+   uv tool install .
    ```
 
 3. Create the `.env` file:
@@ -85,13 +85,13 @@ A dynamic `fzf`-powered view of your Steam library.
     - Using `pipx`:
 
         ```bash
-        pipx install .
+        pipx install argcomplete
         ```
 
     - Using `uv`:
 
         ```bash
-        uv tool .
+        uv tool argcomplete
         ```
 
 - Add the following line to your `.bashrc` or `.zshrc` file to enable autocompletion:
