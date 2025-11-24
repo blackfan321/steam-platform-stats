@@ -14,7 +14,7 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
 - Clean table showing your played games and logged hours.
 - Interactive mode via `fzf`.
 - Some command-line options you can toy with (check out `steam-platform-stats --help`).
-- Cached Steam API results for faster loading (~5 min TTL). Cache stored in `~/.steam-platform-stats/games.json`.
+- Cached Steam API results for faster loading (~5 min TTL). Cache is stored in `~/.steam-platform-stats/games.json`.
 - Easy installation via `pipx` or `uv tool install`.
 
 ## Interactive Mode 
