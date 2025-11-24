@@ -29,3 +29,17 @@ class GameStats:
             playtime_windows_forever=data.get("playtime_windows_forever", 0),
             rtime_last_played=data.get("rtime_last_played", 0)
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "appid": self.appid,
+            "name": self.name,
+            "img_icon_url": self.img_icon_url,
+            "playtime_deck_forever": self.playtime_deck_forever,
+            "playtime_disconnected": self.playtime_disconnected,
+            "playtime_forever": self.playtime_forever,
+            "playtime_linux_forever": self.playtime_linux_forever,
+            "playtime_mac_forever": self.playtime_mac_forever,
+            "playtime_windows_forever": self.playtime_windows_forever,
+            "rtime_last_played": self.rtime_last_played
+        }

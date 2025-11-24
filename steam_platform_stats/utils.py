@@ -1,10 +1,17 @@
 import argparse
+import json
 import os
+import time
+from pathlib import Path
 
 import argcomplete
 from dotenv import load_dotenv
 
 from .models import GameStats
+
+
+APP_DIR = Path("~/.steam-platform-stats").expanduser()
+GAMES_JSON = APP_DIR / "games.json"
 
 
 def get_steam_env_vars(env_file_path: str) -> (str, int):
@@ -55,6 +62,21 @@ def get_argument_parser() -> argparse.ArgumentParser:
         type=str,
         help="override the path to the .env file"
     )
+    parser.add_argument(
+        "--no-color",
+        action='store_true',
+        help="disable colored output"
+    )
+    parser.add_argument(
+        '--preview',
+        type=int,
+        help="show detailed stats for specific game by appid"
+    )
+    parser.add_argument(
+        '--interactive', '-i',
+        action='store_true',
+        help="launch interactive fzf mode"
+    )
 
     time_group = parser.add_mutually_exclusive_group()
     time_group.add_argument(
@@ -80,12 +102,6 @@ def get_argument_parser() -> argparse.ArgumentParser:
 
     argcomplete.autocomplete(parser)
 
-    parser.add_argument(
-        "--no-color",
-        action='store_true',
-        help="disable colored output"
-    )
-
     return parser
 
 
@@ -105,3 +121,25 @@ def sort_games_by_platform(games: list[GameStats], platform: str):
         key=lambda x: get_playtime_for_platform(x, platform),
         reverse=True
     )
+
+
+def load_games_from_cache() -> list[GameStats]:
+    if not GAMES_JSON.exists():
+        return []
+
+    file_age_seconds = time.time() - GAMES_JSON.stat().st_mtime
+    if file_age_seconds > 500 * 60:  # старше 5 минут
+        return []
+
+    with GAMES_JSON.open('r', encoding='utf-8') as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            return []
+    return [GameStats.from_dict(game) for game in data]
+
+
+def save_games_to_cache(games: list[GameStats]):
+    APP_DIR.mkdir(parents=True, exist_ok=True)
+    with GAMES_JSON.open('w', encoding='utf-8') as f:
+        json.dump([game.to_dict() for game in games], f, indent=2)
