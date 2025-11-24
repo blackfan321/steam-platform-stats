@@ -49,10 +49,12 @@ A dynamic `fzf`-powered view of your Steam library.
    
 2. Install the package:
    - Using `pipx`:
+
     ```bash
     pipx install .
     ```
     - Using `uv`:
+
    ```bash
    uv tool install .
    ```
