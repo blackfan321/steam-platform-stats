@@ -14,6 +14,27 @@ APP_DIR = Path("~/.steam-platform-stats").expanduser()
 GAMES_JSON = APP_DIR / "games.json"
 
 
+def launch_interactive_mode():
+    import subprocess
+    import os
+    import sys
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    bash_script = os.path.join(script_dir, "interactive.sh")
+
+    if not os.path.exists(bash_script):
+        print("Error: interactive script not found")
+        return
+
+    try:
+        # Запускаем bash-скрипт
+        subprocess.run(["bash", bash_script], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error running interactive mode: {e}")
+    except FileNotFoundError:
+        print("Error: bash not found. Please install bash.")
+
+
 def get_steam_env_vars(env_file_path: str) -> (str, int):
     load_dotenv(env_file_path)
 
@@ -76,6 +97,11 @@ def get_argument_parser() -> argparse.ArgumentParser:
         '--interactive', '-i',
         action='store_true',
         help="launch interactive fzf mode"
+    )
+    parser.add_argument(
+        "--fzf-table",
+        action="store_true",
+        help="render table in fzf-friendly format (no header, force ANSI, includes APPID column)"
     )
 
     time_group = parser.add_mutually_exclusive_group()
@@ -143,3 +169,47 @@ def save_games_to_cache(games: list[GameStats]):
     APP_DIR.mkdir(parents=True, exist_ok=True)
     with GAMES_JSON.open('w', encoding='utf-8') as f:
         json.dump([game.to_dict() for game in games], f, indent=2)
+
+
+def get_time_ago(timestamp):
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    last_played = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    diff = now - last_played
+
+    if diff.days == 0:
+        if diff.seconds < 3600:  # Меньше часа
+            minutes = diff.seconds // 60
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        else:  # Меньше дня но больше часа
+            hours = diff.seconds // 3600
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    elif diff.days == 1:
+        return "yesterday"
+    elif diff.days < 7:
+        return f"{diff.days} days ago"
+    elif diff.days < 30:
+        weeks = diff.days // 7
+        return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+    elif diff.days < 365:
+        months = diff.days // 30
+        return f"{months} month{'s' if months > 1 else ''} ago"
+    else:
+        years = diff.days // 365
+        return f"{years} year{'s' if years > 1 else ''} ago"
+
+
+def prepare_games_rows(games, platform, min_playtime, limit):
+    rows = []
+    games_to_display = games[:limit] if limit else games
+
+    for idx, game in enumerate(games_to_display, 1):
+        playtime = get_playtime_for_platform(game, platform)
+        if playtime > min_playtime:
+            rows.append({
+                "index": idx,
+                "name": game.name,
+                "playtime": format_minutes(playtime, True),
+                "appid": game.appid,
+            })
+    return rows
