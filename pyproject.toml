@@ -1,6 +1,6 @@
 [project]
 name = "steam-platform-stats"
-version = "0.2.0"
+version = "0.2.1"
 description = "A tool to display user's Steam games statistics by platform"
 requires-python = ">=3.12"
 dependencies = [

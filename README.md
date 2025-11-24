@@ -50,11 +50,11 @@ A dynamic `fzf`-powered view of your Steam library.
 2. Install the package:
    - Using `pipx`:
     ```bash
-    pipx install steam-platform-stats
+    pipx install .
     ```
     - Using `uv`:
    ```bash
-   uv tool steam_platform_stats
+   uv tool .
    ```
 
 3. Create the `.env` file:
@@ -74,26 +74,38 @@ A dynamic `fzf`-powered view of your Steam library.
      STEAM_ID=your_steam_id_here
      ```
     
-    How to get these credentials:
+    How to get these values:
     - `STEAM_API_KEY`: Register at [Steam Web API](https://steamcommunity.com/dev/apikey) to get your API key.
     - `STEAM_ID`: You can use [this site](https://steamid.xyz/): enter your profile URL, then copy obtained Steam64 ID and paste here.
 
 4. (Optional) Enable autocompletion for zsh/bash:
-   - Install `argcomplete` via pip:
-     ```bash
-     pip install argcomplete
-     ```
 
-   - Add the following line to your `.bashrc` or `.zshrc` file to enable autocompletion:
-     ```bash
-     eval "$(register-python-argcomplete steam-platform-stats)"
-     ```
+- Install `argcomplete`:
 
-   - Reload your shell configuration:
-     ```bash
-     source ~/.bashrc
-     source ~/.zshrc
-     ```
+    - Using `pipx`:
+
+        ```bash
+        pipx install .
+        ```
+
+    - Using `uv`:
+
+        ```bash
+        uv tool .
+        ```
+
+- Add the following line to your `.bashrc` or `.zshrc` file to enable autocompletion:
+
+    ```bash
+    eval "$(register-python-argcomplete steam-platform-stats)"
+    ```
+
+- Reload your shell configuration:
+
+    ```bash
+    source ~/.bashrc
+    source ~/.zshrc
+    ```
 
 ## Usage
 ```bash
@@ -126,20 +138,20 @@ steam-platform-stats [OPTIONS]
   **Example**: `--min-playtime-hours 2.5`
 
 ### Output Options
-- `--no-stats` 
-  Hide platform stats (only show games table).
+- `--no-stats`  
+Hide platform stats (only show games table).
 
 - `--no-table`  
-  Hide the games table (only show platform stats).
+Hide the games table (only show platform stats).
 
 - `--no-color`  
-  Disable colored output.
+Disable colored output.
 
-- `--fzf-table`
+- `--fzf-table`  
   Render games table in fzf-friendly format (includes APPID, forces ANSI).
 
-- `--game-stats`
-  Show detailed stats for a single game by APPID.
+- `--game-stats`  
+  Show detailed stats for a single game by APPID.  
   **Example**: `--game-stats 550`
 
 ### Interactive Mode

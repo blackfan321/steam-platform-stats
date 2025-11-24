@@ -19,11 +19,15 @@ while true; do
   full_header="$controls_header"$'\n'"$stats_header"
 
   result=$(steam-platform-stats --platform="$platform" --no-stats --fzf-table | \
-    tail -n +2 | head -n -1 | \
-    fzf --reverse --ansi --delimiter $'\u2502' --with-nth=1,2,3,4 \
+    sed '1d;$d' | \
+    fzf --reverse \
+        --ansi \
+        --delimiter=$'\xe2\x94\x82' \
+        --with-nth=1,2,3,4 \
         --header="$full_header" \
         --no-info \
         --preview="steam-platform-stats --game-stats {5}" \
+        --bind "enter:execute(open steam://nav/games/details/{5})" \
         --expect=tab,ctrl-p,esc)
 
   key=$(echo "$result" | head -1)
