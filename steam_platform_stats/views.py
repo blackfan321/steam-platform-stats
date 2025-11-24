@@ -56,7 +56,7 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool) -> No
         subtitle=f"[dim]AppID: {game.appid}[/dim]",
         border_style="blue",
         padding=(1, 2),
-        width=console.width // 2 - 3
+        width=console.width // 2 - 5
     )
 
     console.print(panel)
