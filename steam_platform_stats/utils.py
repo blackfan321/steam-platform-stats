@@ -1,19 +1,19 @@
 import argparse
 import json
-import os
 import time
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
 import argcomplete
-from dotenv import load_dotenv
+from xdg_base_dirs import xdg_cache_home
 
 from .models import GameStats
 
 
-APP_DIR = Path("~/.steam-platform-stats").expanduser()
-GAMES_JSON_PATH = APP_DIR / "games.json"
+APP_NAME = "steam-platform-stats"
+CACHE_DIR = xdg_cache_home() / APP_NAME
+GAMES_JSON_PATH = CACHE_DIR / "games.json"
 
 
 def launch_interactive_mode() -> None:
@@ -28,24 +28,6 @@ def launch_interactive_mode() -> None:
         subprocess.run(["bash", bash_script_path], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error running interactive mode: {e}")
-
-
-def get_steam_env_vars(env_file_path: Path) -> tuple[str, int]:
-    env_file_path = env_file_path.expanduser()
-    if not env_file_path.exists():
-        raise FileNotFoundError(f".env file not found at {env_file_path}")
-
-    load_dotenv(env_file_path)
-
-    steam_api_key = os.environ.get("STEAM_API_KEY")
-    steam_id = int(os.environ.get("STEAM_ID"))
-
-    if not steam_api_key:
-        raise ValueError("STEAM_API_KEY variable is missing")
-    if not steam_id:
-        raise ValueError("STEAM_ID variable is missing")
-
-    return steam_api_key, steam_id
 
 
 def format_minutes(minutes: int, for_table=False) -> str:
@@ -170,7 +152,7 @@ def load_games_from_cache() -> list[GameStats]:
 
 
 def save_games_to_cache(games: list[GameStats]) -> None:
-    APP_DIR.mkdir(parents=True, exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     with GAMES_JSON_PATH.open('w', encoding='utf-8') as f:
         json.dump([game.to_dict() for game in games], f, indent=2)
 

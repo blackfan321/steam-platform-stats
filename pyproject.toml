@@ -1,6 +1,6 @@
 [project]
 name = "steam-platform-stats"
-version = "0.2.1"
+version = "0.2.2"
 description = "A tool to display user's Steam games statistics by platform"
 requires-python = ">=3.12"
 dependencies = [
@@ -9,6 +9,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
     "rich>=14.2.0",
+    "xdg-base-dirs>=6.0.0",
 ]
 
 [project.scripts]

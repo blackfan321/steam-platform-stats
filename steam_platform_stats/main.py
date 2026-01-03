@@ -1,56 +1,58 @@
 # PYTHON_ARGCOMPLETE_OK
-from .views import *
-from .steam_utils import get_owned_games
-from .utils import *
-from .models import GameStats
 
-DEFAULT_ENV_PATH = Path.home() / ".steam-platform-stats" / ".env"
+from pathlib import Path
+
+from .config import SteamConfig
+from .models import GameStats
+from .steam_utils import get_owned_games
+from . import utils
+from . import views
 
 
 def main():
-    parser = get_argument_parser()
+    parser = utils.get_argument_parser()
     args = parser.parse_args()
 
     if args.interactive:
-        launch_interactive_mode()
+        utils.launch_interactive_mode()
         return
 
-    games: list[GameStats] = load_games_from_cache()
+    games: list[GameStats] = utils.load_games_from_cache()
 
     if not games:
-        env_file_path = Path(args.env_file_path) if args.env_file_path else DEFAULT_ENV_PATH
+        env_file_path = Path(args.env_file_path) if args.env_file_path else None
 
         try:
-            steam_api_key, steam_id = get_steam_env_vars(env_file_path)
-        except FileNotFoundError:
-            print(f"Error: .env file not found at {env_file_path}")
+            steam_config = SteamConfig.load(env_file_path)
+        except FileNotFoundError as e:
+            print(f"Error: {e}")
             return
         except ValueError as e:
             print(f"Error: {e}")
             return
 
-        if not (games := get_owned_games(steam_api_key, steam_id)):
+        if not (games := get_owned_games(steam_config.steam_api_key, steam_config.steam_id)):  # pyright: ignore
             return
 
-        save_games_to_cache(games)
+        utils.save_games_to_cache(games)
 
     if args.game_stats:
         game_app_id = args.game_stats
-        print_game_preview(games, game_app_id, args.no_color)
+        views.print_game_preview(games, game_app_id, args.no_color)
         return
 
-    sort_games_by_platform(games, args.platform)
+    utils.sort_games_by_platform(games, args.platform)
 
     if not args.no_stats:
-        print_platform_stats(games, args.platform, args.no_color)
+        views.print_platform_stats(games, args.platform, args.no_color)
 
-    games_rows = get_filtered_games_rows(games, args.platform, get_min_playtime(args), args.limit)
+    games_rows = utils.get_filtered_games_rows(games, args.platform, utils.get_min_playtime(args), args.limit)
     if not args.no_table:
         if args.fzf_table:
-            print_games_table_fzf(games_rows, args.no_color)
+            views.print_games_table_fzf(games_rows, args.no_color)
             return
         else:
-            print_games_table_console(games_rows, args.no_color)
+            views.print_games_table_console(games_rows, args.no_color)
 
 
 if __name__ == "__main__":

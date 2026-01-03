@@ -4,6 +4,15 @@ platforms=("all" "windows" "linux" "mac" "deck")
 platform_names=("🌐 All Platforms" "💻 Windows" "🐧 Linux" "🍏 MacOS" "🎮 Steam Deck")
 
 current_index=0
+opener=""
+
+if command -v xdg-open &>/dev/null; then
+  opener="xdg-open"
+elif command -v open &>/dev/null; then
+  opener="open"
+else
+  echo "No opener found (xdg-open/open)"
+fi
 
 # ANSI codes
 BOLD=$'\033[1m'
@@ -27,7 +36,7 @@ while true; do
         --header="$full_header" \
         --no-info \
         --preview="steam-platform-stats --game-stats {5}" \
-        --bind "enter:execute(open steam://nav/games/details/{5})" \
+        --bind "enter:execute-silent($opener steam://nav/games/details/{5})" \
         --expect=tab,ctrl-p,esc)
 
   key=$(echo "$result" | head -1)

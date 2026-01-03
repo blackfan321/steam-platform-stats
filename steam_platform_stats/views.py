@@ -32,7 +32,7 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool) -> No
     for emoji, name, playtime, color in platforms:
         if total_playtime > 0:
             percentage = (playtime / total_playtime * 100)
-            is_leader = playtime == max_playtime and playtime > 0
+            is_leader = playtime == max_playtime and playtime > 0  # pyright: ignore
 
             if is_leader:
                 panel_content.append(f"[bold {color}]{emoji} {name}: {format_minutes(playtime)} ({percentage:.1f}%) 🏆[/]")
