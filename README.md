@@ -21,7 +21,7 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
 A dynamic `fzf`-powered view of your Steam library.
 
 ### Demo
-[![asciicast](https://asciinema.org/a/TXvI3wqzy7lNRFUhiPhDauYg0.svg)](https://asciinema.org/a/765579)
+[![asciicast](https://asciinema.org/a/765579.svg)](https://asciinema.org/a/765579)
 
 ### What you can do
 - Browse your Steam games with live filtering.
