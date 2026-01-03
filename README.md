@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-0.2.1-orange)
+![Version](https://img.shields.io/badge/Version-0.2.2-orange)
 
 This little tool lets you check your Steam gaming stats by platform. Pick a platform, and it shows how many games you’ve played, total hours logged, and which games you’ve spent the most time on — and on which platform.
 
