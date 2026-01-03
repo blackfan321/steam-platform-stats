@@ -62,12 +62,12 @@ A dynamic `fzf`-powered view of your Steam library.
 3. Create the `.env` file:
     - Create the directory if it doesn't exist:
      ```bash
-     mkdir -p ~/.steam-platform-stats
+     mkdir -p ~/.config/steam-platform-stats
      ```
 
     - Create and edit the .env file:
      ```bash
-     vim ~/.steam-platform-stats/.env
+     vim ~/.config/steam-platform-stats/.env
      ```
    
     - Add the following lines:
