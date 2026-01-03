@@ -19,7 +19,7 @@ This little tool lets you check your Steam gaming stats by platform. Pick a plat
 
 ## Interactive Mode 
 A dynamic `fzf`-powered view of your Steam library.
-<video src="interactive.webm" style="width:462px; border-radius:10px;" controls></video>
+<video src="interactive.mov" style="width:462px; border-radius:10px;" controls></video>
 
 ### What you can do
 - Browse your Steam games with live filtering.
