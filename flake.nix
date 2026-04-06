@@ -20,8 +20,8 @@
         let
           pkgs = nixpkgs.legacyPackages.${system};
         in
-        {
-          default = pkgs.python314Packages.buildPythonApplication {
+        rec {
+          steam-platform-stats = pkgs.python314Packages.buildPythonApplication {
             pname = "steam-platform-stats";
             version = "0.2.2";
             pyproject = true;
@@ -46,17 +46,16 @@
               mainProgram = "steam-platform-stats";
             };
           };
+          default = steam-platform-stats;
         }
       );
 
-      apps = forAllSystems (
-        system:
-        {
-          default = {
-            type = "app";
-            program = "${self.packages.${system}.default}/bin/steam-platform-stats";
-          };
-        }
-      );
+      apps = forAllSystems (system: rec {
+        steam-platform-stats = {
+          type = "app";
+          program = "${self.packages.${system}.steam-platform-stats}/bin/steam-platform-stats";
+        };
+        default = steam-platform-stats;
+      });
     };
 }
