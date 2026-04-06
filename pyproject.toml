@@ -2,18 +2,22 @@
 name = "steam-platform-stats"
 version = "0.2.2"
 description = "A tool to display user's Steam games statistics by platform"
+license = "MIT"
+authors = [{ name = "Ivan Batrakov", email = "blackfan321@gmail.com" }]
 requires-python = ">=3.12"
+readme = "README.md"
 dependencies = [
     "argcomplete>=3.6.3",
     "prettytable>=3.17.0",
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
-    "rich>=14.2.0",
-    "xdg-base-dirs>=6.0.0",
+    "rich>=14.3.3",
+    "xdg-base-dirs>=6.0.2",
 ]
 
 [project.scripts]
 steam-platform-stats = "steam_platform_stats.main:main"
 
-[tool.setuptools.package-data]
-"steam_platform_stats" = ["*.sh"]
+[build-system]
+requires = ["uv-build>=0.10,<0.12"]
+build-backend = "uv_build"

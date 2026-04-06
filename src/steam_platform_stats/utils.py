@@ -1,15 +1,14 @@
 import argparse
 import json
-import time
 import subprocess
-from datetime import datetime, timezone
+import time
+from datetime import UTC, datetime
 from pathlib import Path
 
 import argcomplete
 from xdg_base_dirs import xdg_cache_home
 
 from .models import GameStats
-
 
 APP_NAME = "steam-platform-stats"
 CACHE_DIR = xdg_cache_home() / APP_NAME
@@ -48,42 +47,38 @@ def get_min_playtime(args) -> int:
 def get_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-p', "--platform",
+        "-p",
+        "--platform",
         default="all",
         choices=["windows", "mac", "linux", "deck", "all"],
-        help="choose the platform: windows, mac, linux, deck, all"
+        help="choose the platform: windows, mac, linux, deck, all",
     )
     parser.add_argument(
-        '-l', "--limit",
+        "-l",
+        "--limit",
         type=int,
         default=None,
-        help="limit the number of games shown in the table"
+        help="limit the number of games shown in the table",
     )
     parser.add_argument(
-        '--env-file-path',
-        type=str,
-        help="override the path to the .env file"
+        "--env-file-path", type=str, help="override the path to the .env file"
     )
     parser.add_argument(
-        "--no-color",
-        action='store_true',
-        help="disable colored output"
+        "--no-color", action="store_true", help="disable colored output"
     )
     parser.add_argument(
-        '--game-stats',
+        "--game-stats",
         type=int,
         metavar="APPID",
-        help="show detailed stats for specific game by APPID"
+        help="show detailed stats for specific game by APPID",
     )
     parser.add_argument(
         "--fzf-table",
         action="store_true",
-        help="render table in fzf-friendly format (no header, force ANSI, include APPID column)"
+        help="render table in fzf-friendly format (no header, force ANSI, include APPID column)",
     )
     parser.add_argument(
-        '-i', '--interactive',
-        action='store_true',
-        help="launch interactive fzf mode"
+        "-i", "--interactive", action="store_true", help="launch interactive fzf mode"
     )
 
     time_group = parser.add_mutually_exclusive_group()
@@ -91,22 +86,24 @@ def get_argument_parser() -> argparse.ArgumentParser:
         "--min-playtime-minutes",
         type=int,
         default=0,
-        help="filter displayed games by minimum playtime in minutes"
+        help="filter displayed games by minimum playtime in minutes",
     )
     time_group.add_argument(
         "--min-playtime-hours",
         type=float,
         default=None,
-        help="filter displayed games by minimum playtime in hours"
+        help="filter displayed games by minimum playtime in hours",
     )
 
     show_group = parser.add_mutually_exclusive_group()
-    show_group.add_argument("--no-stats",
-                            action="store_true",
-                            help="hide platform stats (only show games)")
-    show_group.add_argument("--no-table",
-                            action="store_true",
-                            help="hide the games table (only show platform stats)")
+    show_group.add_argument(
+        "--no-stats", action="store_true", help="hide platform stats (only show games)"
+    )
+    show_group.add_argument(
+        "--no-table",
+        action="store_true",
+        help="hide the games table (only show platform stats)",
+    )
 
     argcomplete.autocomplete(parser)
 
@@ -125,10 +122,7 @@ def get_playtime_for_platform(game: GameStats, platform: str) -> int:
 
 
 def sort_games_by_platform(games: list[GameStats], platform: str) -> None:
-    games.sort(
-        key=lambda x: get_playtime_for_platform(x, platform),
-        reverse=True
-    )
+    games.sort(key=lambda x: get_playtime_for_platform(x, platform), reverse=True)
 
 
 def load_games_from_cache() -> list[GameStats]:
@@ -142,24 +136,24 @@ def load_games_from_cache() -> list[GameStats]:
     if GAMES_JSON_PATH.stat().st_size == 0:  # check if JSON-file is empty
         return []
 
-    with GAMES_JSON_PATH.open('r', encoding='utf-8') as f:
+    with GAMES_JSON_PATH.open("r", encoding="utf-8") as f:
         try:
             data = json.load(f)
         except json.JSONDecodeError as e:
-            print(f'Failed to load games from cache. {e}')
+            print(f"Failed to load games from cache. {e}")
             return []
     return [GameStats.from_dict(game) for game in data]
 
 
 def save_games_to_cache(games: list[GameStats]) -> None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    with GAMES_JSON_PATH.open('w', encoding='utf-8') as f:
+    with GAMES_JSON_PATH.open("w", encoding="utf-8") as f:
         json.dump([game.to_dict() for game in games], f, indent=2)
 
 
 def format_time_ago(timestamp: int):
-    now = datetime.now(timezone.utc)
-    last_played = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    now = datetime.now(UTC)
+    last_played = datetime.fromtimestamp(timestamp, tz=UTC)
     diff = now - last_played
 
     if diff.days == 0:
@@ -184,18 +178,22 @@ def format_time_ago(timestamp: int):
         return f"{years} year{'s' if years > 1 else ''} ago"
 
 
-def get_filtered_games_rows(games: list[GameStats], platform: str, min_playtime: int, limit: int) -> list[dict]:
+def get_filtered_games_rows(
+    games: list[GameStats], platform: str, min_playtime: int, limit: int
+) -> list[dict]:
     rows = []
     games_to_display = games[:limit] if limit else games
 
     for idx, game in enumerate(games_to_display, 1):
         playtime = get_playtime_for_platform(game, platform)
         if playtime > min_playtime:
-            rows.append({
-                "index": idx,
-                "name": game.name,
-                "playtime": format_minutes(playtime, True),
-                "appid": game.appid,
-            })
+            rows.append(
+                {
+                    "index": idx,
+                    "name": game.name,
+                    "playtime": format_minutes(playtime, True),
+                    "appid": game.appid,
+                }
+            )
 
     return rows
