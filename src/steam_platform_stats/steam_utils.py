@@ -19,9 +19,7 @@ def get_owned_games(key: str, steamid: int) -> list[GameStats] | None:
         )
         r.raise_for_status()
     except RequestException as e:
-        print(
-            f"Could not fetch your Steam games. Please check your API key or network connection. {e}"
-        )
+        print(f"Could not fetch your Steam games. Please check your API key or network connection. {e}")
         return None
 
     response = r.json().get("response")

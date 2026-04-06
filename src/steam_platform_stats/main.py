@@ -30,9 +30,7 @@ def main():
             print(f"Error: {e}")
             return
 
-        if not (
-            games := get_owned_games(steam_config.steam_api_key, steam_config.steam_id)
-        ):  # pyright: ignore
+        if not (games := get_owned_games(steam_config.steam_api_key, steam_config.steam_id)):  # pyright: ignore
             return
 
         utils.save_games_to_cache(games)
@@ -47,9 +45,7 @@ def main():
     if not args.no_stats:
         views.print_platform_stats(games, args.platform, args.no_color)
 
-    games_rows = utils.get_filtered_games_rows(
-        games, args.platform, utils.get_min_playtime(args), args.limit
-    )
+    games_rows = utils.get_filtered_games_rows(games, args.platform, utils.get_min_playtime(args), args.limit)
     if not args.no_table:
         if args.fzf_table:
             views.print_games_table_fzf(games_rows, args.no_color)

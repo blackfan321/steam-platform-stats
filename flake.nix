@@ -1,5 +1,5 @@
 {
-  description = "steam-platform-stats — Steam games statistics by platform";
+  description = "Flake for steam-platform-stats";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
