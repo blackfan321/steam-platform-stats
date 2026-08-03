@@ -1,21 +1,29 @@
 import argparse
 import json
+import os
 import subprocess
+import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 
-import argcomplete
 from xdg_base_dirs import xdg_cache_home
 
+from .config import SteamConfig
 from .models import GameStats
+from .steam_utils import get_owned_games
 
 APP_NAME = "steam-platform-stats"
 CACHE_DIR = xdg_cache_home() / APP_NAME
 GAMES_JSON_PATH = CACHE_DIR / "games.json"
+ENV_FILE_ENV_VAR = "STEAM_PLATFORM_STATS_ENV_FILE"
+
+PLATFORMS = ("windows", "mac", "linux", "deck", "all")
+GamesSource = Literal["cache", "api"]
 
 
-def launch_interactive_mode() -> None:
+def launch_interactive_mode(env_file_path: str | None = None) -> None:
     script_dir = Path(__file__).resolve().parent
     bash_script_path = script_dir / "interactive.sh"
 
@@ -23,10 +31,41 @@ def launch_interactive_mode() -> None:
         print("Error: interactive script not found")
         return
 
+    env = os.environ.copy()
+    # Prefer this install's CLI when interactive.sh shells out.
+    cli_dir = str(Path(sys.argv[0]).resolve().parent)
+    env["PATH"] = f"{cli_dir}{os.pathsep}{env.get('PATH', '')}"
+    if env_file_path:
+        env[ENV_FILE_ENV_VAR] = env_file_path
+
     try:
-        subprocess.run(["bash", bash_script_path], check=True)
+        subprocess.run(["bash", bash_script_path], check=True, env=env)
     except subprocess.CalledProcessError as e:
         print(f"Error running interactive mode: {e}")
+
+
+def notify_load_source(source: GamesSource, count: int) -> None:
+    if source == "cache":
+        body = f"Loaded {count} games from cache"
+    else:
+        body = f"Fetched {count} games from Steam API"
+
+    try:
+        subprocess.run(
+            [
+                "notify-send",
+                "--app-name=steam-platform-stats",
+                "--urgency=low",
+                "--expire-time=3000",
+                "steam-platform-stats",
+                body,
+            ],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except FileNotFoundError:
+        pass
 
 
 def format_minutes(minutes: int, for_table=False) -> str:
@@ -35,77 +74,40 @@ def format_minutes(minutes: int, for_table=False) -> str:
     return f"{minutes / 60:.1f}h"
 
 
-def get_min_playtime(args) -> int:
-    if args.min_playtime_hours is not None:
-        min_playtime_minutes = int(args.min_playtime_hours * 60)
-    else:
-        min_playtime_minutes = args.min_playtime_minutes
-
-    return min_playtime_minutes
-
-
 def get_argument_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-p",
-        "--platform",
-        default="all",
-        choices=["windows", "mac", "linux", "deck", "all"],
-        help="choose the platform: windows, mac, linux, deck, all",
-    )
-    parser.add_argument(
-        "-l",
-        "--limit",
-        type=int,
-        default=None,
-        help="limit the number of games shown in the table",
+    parser = argparse.ArgumentParser(
+        description="Browse your Steam playtime stats in an interactive fzf UI."
     )
     parser.add_argument(
         "--env-file-path", type=str, help="override the path to the .env file"
     )
-    parser.add_argument(
-        "--no-color", action="store_true", help="disable colored output"
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    stats_parser = subparsers.add_parser(
+        "stats", help="internal: render platform stats line"
     )
-    parser.add_argument(
-        "--game-stats",
-        type=int,
-        metavar="APPID",
-        help="show detailed stats for specific game by APPID",
-    )
-    parser.add_argument(
-        "--fzf-table",
-        action="store_true",
-        help="render table in fzf-friendly format (no header, force ANSI, include APPID column)",
-    )
-    parser.add_argument(
-        "-i", "--interactive", action="store_true", help="launch interactive fzf mode"
+    stats_parser.add_argument(
+        "-p",
+        "--platform",
+        default="all",
+        choices=PLATFORMS,
     )
 
-    time_group = parser.add_mutually_exclusive_group()
-    time_group.add_argument(
-        "--min-playtime-minutes",
-        type=int,
-        default=0,
-        help="filter displayed games by minimum playtime in minutes",
+    table_parser = subparsers.add_parser(
+        "table", help="internal: render fzf games table"
     )
-    time_group.add_argument(
-        "--min-playtime-hours",
-        type=float,
-        default=None,
-        help="filter displayed games by minimum playtime in hours",
+    table_parser.add_argument(
+        "-p",
+        "--platform",
+        default="all",
+        choices=PLATFORMS,
     )
 
-    show_group = parser.add_mutually_exclusive_group()
-    show_group.add_argument(
-        "--no-stats", action="store_true", help="hide platform stats (only show games)"
+    preview_parser = subparsers.add_parser(
+        "preview", help="internal: render game preview panel"
     )
-    show_group.add_argument(
-        "--no-table",
-        action="store_true",
-        help="hide the games table (only show platform stats)",
-    )
-
-    argcomplete.autocomplete(parser)
+    preview_parser.add_argument("appid", type=int)
 
     return parser
 
@@ -151,6 +153,31 @@ def save_games_to_cache(games: list[GameStats]) -> None:
         json.dump([game.to_dict() for game in games], f, indent=2)
 
 
+def load_or_fetch_games(
+    env_file_path: Path | None = None,
+) -> tuple[list[GameStats], GamesSource] | None:
+    games = load_games_from_cache()
+    if games:
+        return games, "cache"
+
+    try:
+        steam_config = SteamConfig.load(env_file_path)
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return None
+    except ValueError as e:
+        print(f"Error: {e}")
+        return None
+
+    if not (
+        games := get_owned_games(steam_config.steam_api_key, steam_config.steam_id)
+    ):  # pyright: ignore
+        return None
+
+    save_games_to_cache(games)
+    return games, "api"
+
+
 def format_time_ago(timestamp: int):
     now = datetime.now(UTC)
     last_played = datetime.fromtimestamp(timestamp, tz=UTC)
@@ -178,15 +205,12 @@ def format_time_ago(timestamp: int):
         return f"{years} year{'s' if years > 1 else ''} ago"
 
 
-def get_filtered_games_rows(
-    games: list[GameStats], platform: str, min_playtime: int, limit: int
-) -> list[dict]:
+def get_filtered_games_rows(games: list[GameStats], platform: str) -> list[dict]:
     rows = []
-    games_to_display = games[:limit] if limit else games
 
-    for idx, game in enumerate(games_to_display, 1):
+    for idx, game in enumerate(games, 1):
         playtime = get_playtime_for_platform(game, platform)
-        if playtime > min_playtime:
+        if playtime > 0:
             rows.append(
                 {
                     "index": idx,

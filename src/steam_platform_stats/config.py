@@ -35,4 +35,6 @@ class SteamConfig:
         if not steam_id_raw:
             raise ValueError("STEAM_ID variable is missing")
 
-        return cls(steam_api_key=steam_api_key, steam_id=int(steam_id_raw), env_file_path=path)
+        return cls(
+            steam_api_key=steam_api_key, steam_id=int(steam_id_raw), env_file_path=path
+        )

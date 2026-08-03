@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from rich.console import Console
 from rich.panel import Panel
@@ -8,8 +8,8 @@ from .models import GameStats
 from .utils import format_minutes, format_time_ago, get_playtime_for_platform
 
 
-def print_game_preview(games: list[GameStats], appid: int, no_color: bool) -> None:
-    console = Console(no_color=no_color, force_terminal=True)
+def print_game_preview(games: list[GameStats], appid: int) -> None:
+    console = Console(force_terminal=True)
 
     game = next((g for g in games if g.appid == appid), None)
     if not game:
@@ -50,7 +50,7 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool) -> No
     panel_content.append(f"\n[bold]🌐 Total: {format_minutes(total_playtime)}[/bold]")
 
     if game.rtime_last_played:
-        last_played = datetime.fromtimestamp(game.rtime_last_played)
+        last_played = datetime.fromtimestamp(game.rtime_last_played, tz=UTC).astimezone()
         time_ago = format_time_ago(game.rtime_last_played)
 
         panel_content.append(
@@ -70,8 +70,8 @@ def print_game_preview(games: list[GameStats], appid: int, no_color: bool) -> No
     console.print(panel)
 
 
-def print_platform_stats(games: list[GameStats], platform: str, no_color: bool) -> None:
-    console = Console(no_color=no_color, force_terminal=True)
+def print_platform_stats(games: list[GameStats], platform: str) -> None:
+    console = Console(force_terminal=True)
     count, total_minutes = 0, 0
 
     pretty_platform_names = {
@@ -97,36 +97,18 @@ def print_platform_stats(games: list[GameStats], platform: str, no_color: bool) 
     )
 
 
-def print_games_table_fzf(rows: list[dict], no_color: bool) -> None:
-    console = Console(no_color=no_color, force_terminal=True)  # keep fzf colors
-    table = Table(
-        header_style="bold magenta", show_header=False
-    )  # header is not needed for fzf
+def print_games_table(rows: list[dict]) -> None:
+    console = Console(force_terminal=True)
+    table = Table(header_style="bold magenta", show_header=False)
 
     table.add_column("#", style="dim cyan", justify="right")
     table.add_column("GAME", style="green")
     table.add_column("PLAYTIME", style="yellow", justify="right")
-    table.add_column(
-        "APPID", style="dim", justify="right"
-    )  # APPID is needed for fzf preview
+    table.add_column("APPID", style="dim", justify="right")
 
     for row in rows:
         table.add_row(
             str(row["index"]), row["name"], row["playtime"], str(row["appid"])
         )
-
-    console.print(table)
-
-
-def print_games_table_console(rows: list[dict], no_color: bool) -> None:
-    console = Console(no_color=no_color)
-    table = Table(header_style="bold magenta")
-
-    table.add_column("#", style="dim cyan", justify="right")
-    table.add_column("GAME", style="green")
-    table.add_column("PLAYTIME", style="yellow", justify="right")
-
-    for row in rows:
-        table.add_row(str(row["index"]), row["name"], row["playtime"])
 
     console.print(table)

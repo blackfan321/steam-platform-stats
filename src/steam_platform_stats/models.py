@@ -16,9 +16,7 @@ class GameStats:
 
     @classmethod
     def from_dict(cls, data: dict) -> "GameStats":
-        return cls(
-            **{f.name: data.get(f.name, f.default) for f in fields(cls)}
-        )
+        return cls(**{f.name: data.get(f.name, f.default) for f in fields(cls)})
 
     def to_dict(self) -> dict:
         return asdict(self)

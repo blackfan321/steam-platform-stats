@@ -23,20 +23,25 @@
         rec {
           steam-platform-stats = pkgs.python314Packages.buildPythonApplication {
             pname = "steam-platform-stats";
-            version = "0.2.2";
+            version = "0.3.0";
             pyproject = true;
 
             src = ./.;
 
-            nativeBuildInputs = with pkgs.python314Packages; [ uv-build ];
+            nativeBuildInputs = with pkgs; [
+              makeWrapper
+              python314Packages.uv-build
+            ];
 
             propagatedBuildInputs = with pkgs.python314Packages; [
-              argcomplete
-              prettytable
               python-dotenv
               requests
               rich
               xdg-base-dirs
+            ];
+
+            makeWrapperArgs = [
+              "--prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.fzf pkgs.libnotify ]}"
             ];
 
             meta = with pkgs.lib; {

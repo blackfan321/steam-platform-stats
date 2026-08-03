@@ -18,6 +18,13 @@ fi
 BOLD=$'\033[1m'
 RESET=$'\033[0m'
 
+cli_args=()
+preview_cmd="steam-platform-stats preview {5}"
+if [[ -n "${STEAM_PLATFORM_STATS_ENV_FILE:-}" ]]; then
+  cli_args=(--env-file-path "$STEAM_PLATFORM_STATS_ENV_FILE")
+  preview_cmd="steam-platform-stats --env-file-path $(printf %q "$STEAM_PLATFORM_STATS_ENV_FILE") preview {5}"
+fi
+
 # Requires fzf >= 0.63
 filtered_footer='[[ -z $FZF_QUERY ]] || awk -F"│" '\''{ gsub(/[^0-9.]/, "", $4); s += $4 } END { printf "\033[36m🎮 %d\033[0m  \033[33m🕒 %.1fh\033[0m", ENVIRON["FZF_MATCH_COUNT"] + 0, s }'\'' {*f}'
 
@@ -25,12 +32,12 @@ while true; do
   platform="${platforms[$current_index]}"
   platform_pretty="${platform_names[$current_index]}"
 
-  stats_header=$(steam-platform-stats --platform="$platform" --no-table)
+  stats_header=$(steam-platform-stats "${cli_args[@]}" stats -p "$platform")
   controls_header="${BOLD}TAB:${RESET} Next platform | ${BOLD}CTRL-P:${RESET} Platform menu | ${BOLD}ESC:${RESET} Exit${RESET}"
 
   full_header="$controls_header"$'\n'"$stats_header"
 
-  result=$(steam-platform-stats --platform="$platform" --no-stats --fzf-table | \
+  result=$(steam-platform-stats "${cli_args[@]}" table -p "$platform" | \
     sed '1d;$d' | \
     fzf --reverse \
         --ansi \
@@ -40,7 +47,7 @@ while true; do
         --no-sort \
         --header="$full_header" \
         --no-info \
-        --preview="steam-platform-stats --game-stats {5}" \
+        --preview="$preview_cmd" \
         --bind "enter:execute-silent($opener steam://nav/games/details/{5})" \
         --bind "result:bg-transform-footer:$filtered_footer" \
         --expect=tab,ctrl-p,esc)

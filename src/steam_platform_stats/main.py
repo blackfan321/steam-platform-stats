@@ -1,57 +1,36 @@
-# PYTHON_ARGCOMPLETE_OK
-
 from pathlib import Path
 
 from . import utils, views
-from .config import SteamConfig
-from .models import GameStats
-from .steam_utils import get_owned_games
 
 
 def main():
     parser = utils.get_argument_parser()
     args = parser.parse_args()
+    env_file_path = Path(args.env_file_path) if args.env_file_path else None
 
-    if args.interactive:
-        utils.launch_interactive_mode()
+    loaded = utils.load_or_fetch_games(env_file_path)
+    if loaded is None:
         return
 
-    games: list[GameStats] = utils.load_games_from_cache()
+    games, source = loaded
 
-    if not games:
-        env_file_path = Path(args.env_file_path) if args.env_file_path else None
+    if args.command is None:
+        utils.notify_load_source(source, len(games))
+        utils.launch_interactive_mode(args.env_file_path)
+        return
 
-        try:
-            steam_config = SteamConfig.load(env_file_path)
-        except FileNotFoundError as e:
-            print(f"Error: {e}")
-            return
-        except ValueError as e:
-            print(f"Error: {e}")
-            return
-
-        if not (games := get_owned_games(steam_config.steam_api_key, steam_config.steam_id)):  # pyright: ignore
-            return
-
-        utils.save_games_to_cache(games)
-
-    if args.game_stats:
-        game_app_id = args.game_stats
-        views.print_game_preview(games, game_app_id, args.no_color)
+    if args.command == "preview":
+        views.print_game_preview(games, args.appid)
         return
 
     utils.sort_games_by_platform(games, args.platform)
 
-    if not args.no_stats:
-        views.print_platform_stats(games, args.platform, args.no_color)
+    if args.command == "stats":
+        views.print_platform_stats(games, args.platform)
+        return
 
-    games_rows = utils.get_filtered_games_rows(games, args.platform, utils.get_min_playtime(args), args.limit)
-    if not args.no_table:
-        if args.fzf_table:
-            views.print_games_table_fzf(games_rows, args.no_color)
-            return
-        else:
-            views.print_games_table_console(games_rows, args.no_color)
+    if args.command == "table":
+        views.print_games_table(utils.get_filtered_games_rows(games, args.platform))
 
 
 if __name__ == "__main__":
