@@ -28,10 +28,11 @@ A dynamic `fzf`-powered view of your Steam library.
 - Instantly switch between platforms.
 - View detailed per-platform stats for any game in the separate window.
 - See total playtime and game count for the current platform.
+- Filter games by name, see matched game count and combined playtime.
 
 ### Requirements
 - `bash` (as the most common shell, Windows users can use WSL)
-- `fzf` (must be installed and available in `$PATH`)
+- `fzf` ≥ 0.63 (must be installed and available in `$PATH`)
 
 ### Navigation and controls
 | Key / Action | Description                                                                    |

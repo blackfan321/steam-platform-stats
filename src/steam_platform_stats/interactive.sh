@@ -18,6 +18,9 @@ fi
 BOLD=$'\033[1m'
 RESET=$'\033[0m'
 
+# Requires fzf >= 0.63
+filtered_footer='[[ -z $FZF_QUERY ]] || awk -F"│" '\''{ gsub(/[^0-9.]/, "", $4); s += $4 } END { printf "\033[36m🎮 %d\033[0m  \033[33m🕒 %.1fh\033[0m", ENVIRON["FZF_MATCH_COUNT"] + 0, s }'\'' {*f}'
+
 while true; do
   platform="${platforms[$current_index]}"
   platform_pretty="${platform_names[$current_index]}"
@@ -33,10 +36,13 @@ while true; do
         --ansi \
         --delimiter=$'\xe2\x94\x82' \
         --with-nth=1,2,3,4 \
+        --nth=3 \
+        --no-sort \
         --header="$full_header" \
         --no-info \
         --preview="steam-platform-stats --game-stats {5}" \
         --bind "enter:execute-silent($opener steam://nav/games/details/{5})" \
+        --bind "result:bg-transform-footer:$filtered_footer" \
         --expect=tab,ctrl-p,esc)
 
   key=$(echo "$result" | head -1)
