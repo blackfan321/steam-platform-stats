@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-0.4.0-orange)
+![Version](https://img.shields.io/badge/Version-0.4.1-orange)
 
 Browse your Steam library by platform: search games, flip between platforms, peek at where you actually played them.
 

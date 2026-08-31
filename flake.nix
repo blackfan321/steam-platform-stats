@@ -23,7 +23,7 @@
         rec {
           steam-platform-stats = pkgs.python314Packages.buildPythonApplication {
             pname = "steam-platform-stats";
-            version = "0.4.0";
+            version = "0.4.1";
             pyproject = true;
 
             src = ./.;

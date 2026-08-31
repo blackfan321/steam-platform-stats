@@ -113,7 +113,11 @@ def launch_interactive_mode(games: list[GameStats]) -> None:
     env["_STEAM_OPENER"] = opener
 
     preview_cmd = f"{cli} preview {{5}}"
-    footer_cmd = f"{cli} fzf-footer"
+    footer_cmd = (
+        f"cat {{*f}} | {cli} fzf-footer"
+        if sys.platform != "win32"
+        else f"{cli} fzf-footer {{*f}}"
+    )
     initial_table = UI_TABLE_PATH.read_text(encoding="utf-8")
     initial_header = UI_HEADER_PATH.read_text(encoding="utf-8")
 
