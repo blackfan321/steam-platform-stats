@@ -1,0 +1,27 @@
+[steam_api]
+timeout_seconds = 15
+include_played_free_games = true
+
+[cache]
+ttl_minutes = 5
+
+[fzf]
+default_platform = "all"  # all, windows, linux, mac, deck
+min_playtime_minutes = 0
+
+[notifications]
+enabled = true
+
+[platform_labels]
+all = "🌐 All Platforms"
+windows = "💻 Windows"
+linux = "🐧 Linux"
+mac = "🍏 MacOS"
+deck = "🎮 Steam Deck"
+
+[game_override.730]
+custom_name = "CS2"
+
+[game_override.570]
+custom_name = "Dota 2"
+hidden = true

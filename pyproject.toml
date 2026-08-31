@@ -1,13 +1,14 @@
 [project]
 name = "steam-platform-stats"
-version = "0.3.0"
+version = "0.4.0"
 description = "A tool to display user's Steam games statistics by platform"
 license = "MIT"
 authors = [{ name = "Ivan Batrakov", email = "blackfan321@gmail.com" }]
 requires-python = ">=3.12"
 readme = "README.md"
 dependencies = [
-    "python-dotenv>=1.2.2",
+    "keyring>=25.7.0",
+    "pydantic>=2.0",
     "requests>=2.34.2",
     "rich>=15.0.0",
     "xdg-base-dirs>=6.0.2",
@@ -19,3 +20,10 @@ steam-platform-stats = "steam_platform_stats.main:main"
 [build-system]
 requires = ["uv-build>=0.10,<0.13"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["basedpyright>=1.23.0"]
+
+[tool.basedpyright]
+include = ["src"]
+pythonVersion = "3.12"

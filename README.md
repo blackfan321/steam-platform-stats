@@ -4,24 +4,25 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Version](https://img.shields.io/badge/Version-0.3.0-orange)
 
-Browse your Steam playtime stats by platform in an interactive `fzf` UI — filter by name, switch platforms, and see per-game breakdowns.
-
-<img src="screenshot.png" style="width:462px; height:348px; border-radius:10px;" />
+Browse your Steam library by platform: search games, flip between platforms, peek at where you actually played them.
 
 ## Features
 
-- Interactive `fzf` browser for your Steam library.
-- Per-platform stats (Windows, Mac, Linux, Steam Deck, or all).
-- Live name filtering with matched game count and combined playtime.
-- Per-game platform breakdown in the preview pane.
-- Cached Steam API results (~5 min TTL) in `~/.cache/steam-platform-stats/games.json`.
-- Easy installation via `pipx` or `uv tool install`.
+- `fzf`-powered browser for your Steam library
+- Browse your library by a platform (Windows/Mac/Linux/Steam Deck/all at once)
+- Search by game name, switch platforms on the fly
+- Preview pane: pick a game to see its hours on each platform
+- Hide games or rename them (in a config)
+- API creds are stored in the system keyring
+- Cached API responses so you're not hitting Steam every time
+- Easy installation using `pipx` or `uv tool`
 
 ## Requirements
 
-- `bash`
+- Python 3.12+
 - `fzf` ≥ 0.63
-- `notify-send` (libnotify) — optional, for cache/API load notifications
+- `notify-send` (libnotify) — optional, for cache/API games load notifications
+- A Secret Service provider (GNOME Keyring, KWallet, KeePassXC, etc.)
 
 ## Demo
 
@@ -29,21 +30,22 @@ Browse your Steam playtime stats by platform in an interactive `fzf` UI — filt
 
 ## What you can do
 
-- Browse your Steam games with live filtering (game name only; results keep playtime order).
-- Instantly switch between platforms.
-- View detailed per-platform stats for any game in the preview window.
-- See total playtime and game count for the current platform.
-- While filtering, see matched game count and combined playtime in the footer.
-- `#` shows the game's playtime rank on the current platform.
+- Scroll your library, type to filter games by name
+- Hit `TAB` to cycle platforms — Windows, Linux, Deck, whatever
+- Hover a game to see where the hours actually went
+- Check total games + playtime for whatever platform you're on
+- Filter something? Footer shows how many matches and their combined hours
+- `#` column = your rank by playtime on that platform
+- `Enter` opens the game in Steam Library
 
 ## Navigation and controls
 
 | Key / Action | Description                                                                    |
 |--------------|--------------------------------------------------------------------------------|
-| `TAB`        | Switch to the next platform in the list (All, Windows, Linux, Mac, Steam Deck) |
-| `CTRL-P`     | Open the platform selection menu                                               |
+| `TAB`        | Cycle platforms |
+| `CTRL-P`     | Choose the platform you want                                               |
 | `ESC`        | Exit                                                                           |
-| `Enter`      | Open the game in your Steam Library                                            |
+| `Enter`      | Open the game in Steam Library                                            |
 
 ## Installation
 
@@ -65,26 +67,52 @@ Browse your Steam playtime stats by platform in an interactive `fzf` UI — filt
    uv tool install .
    ```
 
-3. Create the `.env` file:
-    - Create the directory if it doesn't exist:
-     ```bash
-     mkdir -p ~/.config/steam-platform-stats
-     ```
+3. Save your Steam API credentials to the system keyring:
 
-    - Create and edit the .env file:
-     ```bash
-     vim ~/.config/steam-platform-stats/.env
-     ```
+    ```bash
+    steam-platform-stats keyring store
+    ```
 
-    - Add the following lines:
-     ```bash
-     STEAM_API_KEY='your_api_key_here'
-     STEAM_ID=your_steam_id_here
-     ```
+    You will be prompted for:
+    - Steam64 ID — e.g. via [steamid.xyz](https://steamid.xyz/)
+    - API key — register at [Steam Web API](https://steamcommunity.com/dev/apikey)
 
-    How to get these values:
-    - `STEAM_API_KEY`: Register at [Steam Web API](https://steamcommunity.com/dev/apikey) to get your API key.
-    - `STEAM_ID`: You can use [this site](https://steamid.xyz/): enter your profile URL, then copy obtained Steam64 ID and paste here.
+    Useful commands:
+
+    ```bash
+    steam-platform-stats keyring status
+    steam-platform-stats keyring clear
+    ```
+
+4. [Optional] Create a config-file: `~/.config/steam-platform-stats/config.toml`:
+
+    ```toml
+    [steam_api]
+    timeout_seconds = 30
+    include_played_free_games = true
+
+    [cache]
+    ttl_minutes = 30
+
+    [fzf]
+    default_platform = "linux"
+    min_playtime_minutes = 60
+
+    [notifications]
+    enabled = false
+
+    [platform_labels]
+    linux = "🐧 Linux"
+
+    [game_override.730]
+    custom_name = "CS2"
+
+    [game_override.570]
+    custom_name = "Dota 2 (garbage game btw)"
+    hidden = true
+    ```
+
+    See [`config.example.toml`](config.example.toml).
 
 ## Usage
 
@@ -92,6 +120,7 @@ Browse your Steam playtime stats by platform in an interactive `fzf` UI — filt
 steam-platform-stats
 ```
 
-Optional:
+## Acknowledgments
 
-- `--env-file-path PATH` — override the path to the `.env` file.
+A lot of the code was written with AI help.
+Codebase is kinda garbage atm. Gonna fix it some day.

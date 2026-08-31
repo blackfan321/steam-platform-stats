@@ -1,21 +1,19 @@
+import sys
 from datetime import UTC, datetime
+from io import StringIO
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from .config import UserConfig, load_user_config
+from .formatting import format_minutes, format_time_ago
+from .games import game_is_filtered, get_playtime_for_platform
 from .models import GameStats
-from .utils import format_minutes, format_time_ago, get_playtime_for_platform
+from .types import GameTableRow, Platform
 
 
-def print_game_preview(games: list[GameStats], appid: int) -> None:
-    console = Console(force_terminal=True)
-
-    game = next((g for g in games if g.appid == appid), None)
-    if not game:
-        console.print("[red]Game not found[/red]")
-        return
-
+def _preview_panel(game: GameStats, *, width: int) -> Panel:
     total_playtime = game.playtime_forever
     platforms = [
         ("💻", "Windows", game.playtime_windows_forever, "blue"),
@@ -24,15 +22,13 @@ def print_game_preview(games: list[GameStats], appid: int) -> None:
         ("🎮", "Steam Deck", game.playtime_deck_forever, "magenta"),
     ]
 
-    if total_playtime > 0:
-        max_playtime = max(playtime for _, _, playtime, _ in platforms)
-
-    panel_content = []
+    max_playtime = max((playtime for _, _, playtime, _ in platforms), default=0)
+    panel_content: list[str] = []
 
     for emoji, name, playtime, color in platforms:
         if total_playtime > 0:
             percentage = playtime / total_playtime * 100
-            is_leader = playtime == max_playtime and playtime > 0  # pyright: ignore
+            is_leader = playtime == max_playtime and playtime > 0
 
             if is_leader:
                 panel_content.append(
@@ -50,7 +46,9 @@ def print_game_preview(games: list[GameStats], appid: int) -> None:
     panel_content.append(f"\n[bold]🌐 Total: {format_minutes(total_playtime)}[/bold]")
 
     if game.rtime_last_played:
-        last_played = datetime.fromtimestamp(game.rtime_last_played, tz=UTC).astimezone()
+        last_played = datetime.fromtimestamp(
+            game.rtime_last_played, tz=UTC
+        ).astimezone()
         time_ago = format_time_ago(game.rtime_last_played)
 
         panel_content.append(
@@ -58,49 +56,53 @@ def print_game_preview(games: list[GameStats], appid: int) -> None:
         )
         panel_content.append(f"[dim]   ({time_ago})[/dim]")
 
-    panel = Panel(
+    return Panel(
         "\n".join(panel_content),
         title=f"[bold blue]{game.name}[/bold blue]",
         subtitle=f"[dim]AppID: {game.appid}[/dim]",
         border_style="blue",
         padding=(1, 2),
-        width=console.width // 2 - 5,
+        width=width,
     )
 
-    console.print(panel)
 
-
-def print_platform_stats(games: list[GameStats], platform: str) -> None:
+def print_game_preview(games: list[GameStats], appid: int) -> None:
     console = Console(force_terminal=True)
+
+    game = next((g for g in games if g.appid == appid), None)
+    if not game:
+        console.print("[red]Game not found[/red]")
+        return
+
+    console.print(_preview_panel(game, width=console.width // 2 - 5))
+
+
+def format_platform_stats(
+    games: list[GameStats], platform: str, config: UserConfig | None = None
+) -> str:
+    config = config or load_user_config()
     count, total_minutes = 0, 0
-
-    pretty_platform_names = {
-        "windows": "️💻 Windows",
-        "mac": "🍏 MacOS",
-        "linux": "🐧 Linux",
-        "deck": "🎮 Steam Deck",
-        "all": "🌐 All Platforms",
-    }
-
-    platform_pretty_name = pretty_platform_names.get(platform, "all")
+    platform_pretty_name = config.platform_label(platform)
 
     for game in games:
-        playtime = get_playtime_for_platform(game, platform)
-        if playtime > 0:
-            count += 1
-            total_minutes += playtime
+        if game_is_filtered(game, platform, config):
+            continue
 
+        playtime = get_playtime_for_platform(game, platform)
+        count += 1
+        total_minutes += playtime
+
+    console = Console(force_terminal=True, file=StringIO(), width=120)
     console.print(
         f"[bold blue]{platform_pretty_name}[/bold blue]  "
-        f"[bold cyan]🎮 {count}[/bold cyan]  "
-        f"[bold yellow]🕒 {format_minutes(total_minutes)}[/bold yellow]"
+        + f"[bold cyan]🎮 {count}[/bold cyan]  "
+        + f"[bold yellow]🕒 {format_minutes(total_minutes)}[/bold yellow]"
     )
+    return console.file.getvalue().rstrip("\n")  # type: ignore[union-attr]
 
 
-def print_games_table(rows: list[dict]) -> None:
-    console = Console(force_terminal=True)
+def format_games_table(rows: list[GameTableRow]) -> str:
     table = Table(header_style="bold magenta", show_header=False)
-
     table.add_column("#", style="dim cyan", justify="right")
     table.add_column("GAME", style="green")
     table.add_column("PLAYTIME", style="yellow", justify="right")
@@ -111,4 +113,35 @@ def print_games_table(rows: list[dict]) -> None:
             str(row["index"]), row["name"], row["playtime"], str(row["appid"])
         )
 
+    console = Console(force_terminal=True, file=StringIO(), width=120)
     console.print(table)
+    lines = console.file.getvalue().splitlines()  # type: ignore[union-attr]
+    return "\n".join(lines[1:-1])
+
+
+def format_interactive_header(
+    games: list[GameStats], platform: Platform, config: UserConfig | None = None
+) -> str:
+    config = config or load_user_config()
+    bold = "\033[1m"
+    reset = "\033[0m"
+    controls_header = (
+        f"{bold}TAB:{reset} Next platform | "
+        + f"{bold}CTRL-P:{reset} Platform menu | "
+        + f"{bold}ESC:{reset} Exit"
+    )
+    stats_header = format_platform_stats(games, platform, config)
+    return f"{controls_header}\n{stats_header}"
+
+
+def print_platform_stats(games: list[GameStats], platform: str) -> None:
+    sys.stdout.write(format_platform_stats(games, platform))
+    sys.stdout.write("\n")
+
+
+def print_games_table(rows: list[GameTableRow]) -> None:
+    if not rows:
+        return
+
+    sys.stdout.write(format_games_table(rows))
+    sys.stdout.write("\n")

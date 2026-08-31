@@ -1,40 +1,79 @@
-import os
-from dataclasses import dataclass
+import tomllib
+from functools import lru_cache
 from pathlib import Path
 
-from dotenv import load_dotenv
+from pydantic import BaseModel, Field, ValidationError
+from rich.console import Console
 from xdg_base_dirs import xdg_config_home
 
-APP_NAME = "steam-platform-stats"
-DEFAULT_ENV_PATH = xdg_config_home() / APP_NAME / ".env"
+from .constants import APP_NAME, DEFAULT_PLATFORM_LABELS
+from .types import Platform
+
+CONFIG_PATH = Path(xdg_config_home()) / APP_NAME / "config.toml"
 
 
-@dataclass(frozen=True)
-class SteamConfig:
-    steam_api_key: str
-    steam_id: int
-    env_file_path: Path
+class SteamApiSettings(BaseModel):
+    timeout_seconds: int = Field(default=15, gt=0)
+    include_played_free_games: bool = True
 
-    @staticmethod
-    def resolve_env_path(env_file_path: Path | None) -> Path:
-        return (env_file_path or DEFAULT_ENV_PATH).expanduser()
 
-    @classmethod
-    def load(cls, env_file_path: Path | None = None) -> "SteamConfig":
-        path = cls.resolve_env_path(env_file_path)
-        if not path.exists():
-            raise FileNotFoundError(f".env file not found at {path}")
+class CacheSettings(BaseModel):
+    ttl_minutes: int = Field(default=5, ge=0)
 
-        load_dotenv(path)
 
-        steam_api_key = os.environ.get("STEAM_API_KEY")
-        steam_id_raw = os.environ.get("STEAM_ID")
+class FzfSettings(BaseModel):
+    default_platform: Platform = "all"
+    min_playtime_minutes: int = Field(default=0, ge=0)
 
-        if not steam_api_key:
-            raise ValueError("STEAM_API_KEY variable is missing")
-        if not steam_id_raw:
-            raise ValueError("STEAM_ID variable is missing")
 
-        return cls(
-            steam_api_key=steam_api_key, steam_id=int(steam_id_raw), env_file_path=path
+class NotificationsSettings(BaseModel):
+    enabled: bool = True
+
+
+class GameOverride(BaseModel):
+    custom_name: str | None = None
+    hidden: bool = False
+
+
+class UserConfig(BaseModel):
+    steam_api: SteamApiSettings = Field(default_factory=SteamApiSettings)
+    cache: CacheSettings = Field(default_factory=CacheSettings)
+    fzf: FzfSettings = Field(default_factory=FzfSettings)
+    notifications: NotificationsSettings = Field(default_factory=NotificationsSettings)
+    platform_labels: dict[str, str] = Field(default_factory=dict)
+    game_override: dict[int, GameOverride] = Field(default_factory=dict)
+
+    def platform_label(self, platform: str) -> str:
+        return self.platform_labels.get(
+            platform, DEFAULT_PLATFORM_LABELS.get(platform, platform)
         )
+
+    def is_hidden(self, appid: int) -> bool:
+        override = self.game_override.get(appid)
+        return bool(override and override.hidden)
+
+    def display_name(self, appid: int, default: str) -> str:
+        if (override := self.game_override.get(appid)) and override.custom_name:
+            return override.custom_name
+        return default
+
+
+@lru_cache
+def load_user_config() -> UserConfig:
+    if not CONFIG_PATH.is_file():
+        return UserConfig()
+
+    try:
+        with CONFIG_PATH.open("rb") as f:
+            data = tomllib.load(f)
+        return UserConfig.model_validate(data)
+    except ValidationError as e:
+        Console(stderr=True).print(
+            f"[yellow]Warning:[/yellow] could not load {CONFIG_PATH}: {e}"
+        )
+        return UserConfig()
+    except tomllib.TOMLDecodeError as e:
+        Console(stderr=True).print(
+            f"[yellow]Warning:[/yellow] could not parse {CONFIG_PATH}: {e}"
+        )
+        return UserConfig()
