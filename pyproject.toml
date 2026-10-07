@@ -8,10 +8,10 @@ requires-python = ">=3.12"
 readme = "README.md"
 dependencies = [
     "keyring>=25.7.0",
-    "pydantic>=2.13.5",
+    "pydantic>=2.13.4",
     "requests>=2.34.2",
     "rich>=15.0.0",
-    "xdg-base-dirs>=6.0.3",
+    "xdg-base-dirs>=6.0.2",
 ]
 
 [project.scripts]
