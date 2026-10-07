@@ -1,68 +1,28 @@
 {
   description = "Flake for steam-platform-stats";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
   outputs =
-    { self, nixpkgs }:
-    let
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        ./flake/package.nix
+        ./flake/checks.nix
+        ./flake/devshell.nix
+      ];
+
       systems = [
         "x86_64-linux"
         "aarch64-linux"
-        "x86_64-darwin"
         "aarch64-darwin"
       ];
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    {
-      packages = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        rec {
-          steam-platform-stats = pkgs.python314Packages.buildPythonApplication {
-            pname = "steam-platform-stats";
-            version = "0.4.1";
-            pyproject = true;
-
-            src = ./.;
-
-            nativeBuildInputs = with pkgs; [
-              makeWrapper
-              python314Packages.uv-build
-            ];
-
-            propagatedBuildInputs = with pkgs.python314Packages; [
-              keyring
-              pydantic
-              requests
-              rich
-              secretstorage
-              xdg-base-dirs
-            ];
-
-            makeWrapperArgs = [
-              "--prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.fzf pkgs.libnotify ]}"
-            ];
-
-            meta = with pkgs.lib; {
-              description = "Display user's Steam games statistics by platform";
-              homepage = "https://github.com/blackfan321/steam-platform-stats";
-              license = licenses.mit;
-              mainProgram = "steam-platform-stats";
-            };
-          };
-          default = steam-platform-stats;
-        }
-      );
-
-      apps = forAllSystems (system: rec {
-        steam-platform-stats = {
-          type = "app";
-          program = "${self.packages.${system}.steam-platform-stats}/bin/steam-platform-stats";
-        };
-        default = steam-platform-stats;
-      });
     };
 }

@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 
 [[package]]
@@ -13,14 +13,14 @@ wheels = [
 
 [[package]]
 name = "basedpyright"
-version = "1.39.10"
+version = "1.40.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nodejs-wheel-binaries" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/68/43/ad2999f3b09eb2b1e59931d88fac0f7bcc9c17fc18c903268779bd10cc97/basedpyright-1.39.10.tar.gz", hash = "sha256:c8eaf5302f3265e275c7df4fba194d7afa7c1cb53fbfd448e90098360aca2c2e", size = 24740347, upload-time = "2026-08-13T17:09:02.51Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/36/1cf637b15704e4c1f09f8bcc48ab3bfaff089e7466565bd34d8d1dcc03e9/basedpyright-1.40.2.tar.gz", hash = "sha256:d4db36d095230379acc66c7e5fba7e4b50ca902f6e803d696782dd031cb8d7d7", size = 25559682, upload-time = "2026-10-04T11:28:30.415Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/2a/a224054d75a58786c482f63b8ff2a09fc3362268bd1ebd0a61fb3f982153/basedpyright-1.39.10-py3-none-any.whl", hash = "sha256:cbd75d83c0be841329bcfef2d2f1182f152a6d975b8eb199e75cf5b8e9a3de78", size = 13482322, upload-time = "2026-08-13T17:08:59.074Z" },
+    { url = "https://files.pythonhosted.org/packages/de/53/0031b22e118264a57a3b64dfc0c8f0659b81af5bccd419ac62933013c601/basedpyright-1.40.2-py3-none-any.whl", hash = "sha256:3a53aeb93a86675ded0e12bc27bd8476c1742356de07ad8cab67bff18110c690", size = 13694487, upload-time = "2026-10-04T11:28:26.271Z" },
 ]
 
 [[package]]
@@ -466,7 +466,7 @@ wheels = [
 
 [[package]]
 name = "steam-platform-stats"
-version = "0.4.1"
+version = "0.4.2"
 source = { editable = "." }
 dependencies = [
     { name = "keyring" },
@@ -484,14 +484,14 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "keyring", specifier = ">=25.7.0" },
-    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pydantic", specifier = ">=2.13.5" },
     { name = "requests", specifier = ">=2.34.2" },
     { name = "rich", specifier = ">=15.0.0" },
-    { name = "xdg-base-dirs", specifier = ">=6.0.2" },
+    { name = "xdg-base-dirs", specifier = ">=6.0.3" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "basedpyright", specifier = ">=1.23.0" }]
+dev = [{ name = "basedpyright", specifier = ">=1.40.2" }]
 
 [[package]]
 name = "typing-extensions"
@@ -525,9 +525,9 @@ wheels = [
 
 [[package]]
 name = "xdg-base-dirs"
-version = "6.0.2"
+version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/bf/d0/bbe05a15347538aaf9fa5b51ac3b97075dfb834931fcb77d81fbdb69e8f6/xdg_base_dirs-6.0.2.tar.gz", hash = "sha256:950504e14d27cf3c9cb37744680a43bf0ac42efefc4ef4acf98dc736cab2bced", size = 4085, upload-time = "2024-10-19T14:35:08.114Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/3b/4dc3f77ec9c5073467d95b9c9ded466cfba9a8b71a889096a01ac94b9b4e/xdg_base_dirs-6.0.3.tar.gz", hash = "sha256:9e8274f6d2514b587d257bda21d7fcf758180343c4ad5a47be0b202548211ec2", size = 4076, upload-time = "2026-09-22T06:02:52.495Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fc/03/030b47fd46b60fc87af548e57ff59c2ca84b2a1dadbe721bb0ce33896b2e/xdg_base_dirs-6.0.2-py3-none-any.whl", hash = "sha256:3c01d1b758ed4ace150ac960ac0bd13ce4542b9e2cdf01312dcda5012cfebabe", size = 4747, upload-time = "2024-10-19T14:35:05.931Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/7b/e1376eb2e5c3c0c7feca70687ba1def829d848b607a7e8d1811ea9a2c155/xdg_base_dirs-6.0.3-py3-none-any.whl", hash = "sha256:c80886a8f4e369d6148fdebd7abf182bf053ce6c744f7b7eec5853fec835ff44", size = 5431, upload-time = "2026-09-22T06:02:51.472Z" },
 ]

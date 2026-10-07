@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-0.4.1-orange)
+![Version](https://img.shields.io/badge/Version-0.4.2-orange)
 
 Browse your Steam library by platform: search games, flip between platforms, peek at where you actually played them.
 
@@ -14,7 +14,7 @@ Browse your Steam library by platform: search games, flip between platforms, pee
 - Preview pane: pick a game to see its hours on each platform
 - Hide games or rename them (in a config)
 - API creds are stored in the system keyring
-- Cached API responses so you're not hitting Steam every time
+- Cached API responses so you're not hitting Steam API every time
 - Easy installation using `pipx` or `uv tool`
 
 ## Requirements

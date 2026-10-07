@@ -169,3 +169,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+.ruff_cache
+
+# Nix / direnv
+result
+result-*
+.direnv
+
+# git-hooks.nix / prek
+.pre-commit-config.yaml
